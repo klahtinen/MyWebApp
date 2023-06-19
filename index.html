@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task Tracker</title>
+  <style>
+   body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-image: url('C:/Users/Kimmo/Desktop/Heidin energiat/water-5049286.jpg');
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .background-image {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.8;
+    }
+
+    .container {
+      margin: 20px auto;
+      max-width: 1400px;
+      padding: 20px;
+      background-color: transparent; /* Change the background color to transparent */
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .task-button {
+      display: inline-block;
+      padding: 12px;
+      background-color: #e0e0e0;
+      color: #333;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      margin: 5px 5px;
+    }
+
+    .task-button:hover {
+      background-color: #ccc;
+    }
+
+    .task-button:focus {
+      outline: none;
+      background-color: #ccc;
+    }
+   
+    .task-form {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .task-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      transition: border-color 0.3s ease;
+      margin: 2px 3px;
+      margin-top: 10px;
+    }
+
+    .task-input:focus {
+      outline: none;
+      border-color: #4caf50;
+    }
+                    
+    .score-label {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .score-value {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .score-green {
+      color: green;
+    }
+
+    .score-orange {
+      color: orange;
+    }
+
+    .score-red {
+      color: red;
+    }
+
+    .warning-green {
+      color: green;
+    }
+
+    .warning-orange {
+      color: orange;
+    }
+
+    .warning-red {
+      color: red;
+    }
+
+    @media only screen and (min-width: 768px) and (max-width: 1024px) {
+      .container {
+        margin: 10px;
+        padding: 10px;
+        width: 90%;
+      }
+
+      .task-button {
+        width: 100%;
+      }
+    }
+
+    /* iPhones */
+    @media only screen and (max-width: 767px) {
+      .container {
+        margin: 5px;
+        padding: 5px;
+        width: 90%;
+      }
+
+  </style>
+</head>
+<<body>
+   <div class="container">
+     <h1>Energiatilanne</h1>
+     <div id="warningText"></div>
+     <div class="score-label">Total Score: <span id="score" class="score-value"></span></div>
+     <button class="task-button" onclick="nullifyScore()">Nullify Score</button>
+     <form class="task-form" onsubmit="addTask(event)">
+       <input id="taskInput" class="task-input" type="text" placeholder="Task Name" required>
+       <input id="scoreInput" class="task-input" type="number" placeholder="Score" required>
+       <button class="task-button" type="submit">Add Task</button>
+     </form>
+     <div id="taskButtons"></div>
+   </div>
+
+  <script>
+    const tasks = [
+      { name: "Energian kuluminen", score: 0 },
+      { name: "Käynti kaupassa", score: -5 },
+      { name: "Suunnittelematon käynti kaupassa", score: -20 },
+      { name: "Debatti", score: -1000 },
+      { name: "Kotoa poistuminen muistamisineen", score: -1 },
+      { name: "Tulevaisuusstressi", score: -250 },
+      { name: "Suihku suurella aistikuormalla", score: -20 },
+      { name: "Suihku keskimääräisellä aistikuormalla", score: -10 },
+      { name: "Suihku pienellä aistikuormalla", score: -50 },
+      { name: "Täydellinen suihku", score: 1 },
+      { name: "Herääminen hitaasti hiljaisuudessa", score: 5 },
+      { name: "Herääminen aikaisin riittävän yöunen jälkeen", score: 5 },
+      { name: "Hiljaisuus, jossa vesisateen ääni", score: 5 },
+      { name: "Ennakoimattomat tilanteet", score: -50 },
+      { name: "Kotoa poistuminen muistamisineen", score: -1 },
+      { name: "Yksinäisyyden tunne", score: -100 },
+      { name: "Kissan osoittama hellyys tai läheisyys", score: 20 },
+      { name: "Asiat yksi kerrallaan rauhallisesti (langat käsissä)", score: 5 },
+      { name: "Flow", score: 100 },
+      { name: "Liian monta asiaa yhtaikaa", score: -50 },
+      { name: "Kohina ja mekkala", score: -25 },
+      { name: "Näkökenttää häiritsevät asiat ympäristössä", score: -1 },
+      { name: "Esteettinen levollisuus, visuaalisesti rauhallinen ympäristö", score: 1 },
+      { name: "Hukassa olevat asiat, etsiminen", score: -10 },
+      { name: "Asioiden paikallaan olo", score: 1 },
+      { name: "Tyyneys, harmonia, hiljaisuus, rauhallisuus, kärsivällisyys", score: 20 },
+      { name: "Twitter ja uutiset", score: -15 },
+      { name: "Hayday", score: 10 },
+      { name: "Itsensä psyykkaaminen asioihin", score: -50 },
+      { name: "Keskittymiskyvyn ylläpitäminen illman flowta", score: -25 },
+      { name: "Toisten ihmisten hankalien tunteiden kannattaminen ja psyykkinen kannattelu", score: -100 },
+      { name: "Terveellinen ruoka hyvällä rytmillä", score: 50 },
+      { name: "Epäterveellinen ruoka", score: -50 },
+      { name: "Houkutukset kaapissa, joita pitää vastustaa", score: -25 },
+      { name: "Päänsärky (kroonistunut migreeni tai matalapaine päänsärky) ja kaikki pienet kivut ja säryt", score: -15 },
+      { name: "Tuoreet kukat maljakossa", score: 10 },
+      { name: "Happi määrä, tuuli, raikas ilma", score: 50 },
+    ];
+
+    const taskButtonsContainer = document.getElementById("taskButtons");
+    const scoreElement = document.getElementById("score");
+    const warningTextElement = document.getElementById("warningText");
+
+    let totalScore = 0;
+
+    function addTask(event) {
+      event.preventDefault();
+      const taskInput = document.getElementById("taskInput");
+      const scoreInput = document.getElementById("scoreInput");
+
+      const taskName = taskInput.value.trim();
+      const taskScore = parseInt(scoreInput.value);
+
+      if (taskName !== "" && !isNaN(taskScore)) {
+        tasks.push({ name: taskName, score: taskScore });
+        createTaskButton(taskName, taskScore);
+        taskInput.value = "";
+        scoreInput.value = "";
+      }
+    }
+
+    function createTaskButton(name, score) {
+      const button = document.createElement("button");
+      button.className = "task-button";
+      button.textContent = `${name} (${score})`;
+      button.addEventListener("click", () => updateScore(score));
+      taskButtonsContainer.appendChild(button);
+    }
+
+    function updateScore(score) {
+      totalScore += score;
+      scoreElement.textContent = totalScore;
+      updateWarningText(totalScore);
+      updateScoreColor(totalScore);
+      saveScore(totalScore);
+    }
+
+    function updateWarningText(score) {
+      warningTextElement.innerHTML = "";
+      let warningClass = "";
+
+      if (score > 99) {
+        warningClass = "warning-green";
+        warningTextElement.textContent = "Keep up the good course, You are doing well";
+      } else if (score <= 99 && score >= -99) {
+        warningClass = "warning-orange";
+        warningTextElement.textContent = "You need to slow down and restore your energy";
+      } else if (score < -99) {
+        warningClass = "warning-red";
+        warningTextElement.textContent = "Time for interventions, talk with the family about ways they can help you to restore your energy";
+      }
+
+      warningTextElement.classList.add(warningClass);
+    }
+
+    function updateScoreColor(score) {
+      scoreElement.classList.remove("score-green", "score-orange", "score-red");
+
+      if (score > 99) {
+        scoreElement.classList.add("score-green");
+      } else if (score <= 99 && score >= -99) {
+        scoreElement.classList.add("score-orange");
+      } else if (score < -99) {
+        scoreElement.classList.add("score-red");
+      }
+    }
+
+    function saveScore(score) {
+      localStorage.setItem("totalScore", score);
+    }
+
+    function retrieveScore() {
+      const savedScore = localStorage.getItem("totalScore");
+      if (savedScore) {
+        totalScore = parseInt(savedScore);
+        scoreElement.textContent = totalScore;
+        updateWarningText(totalScore);
+        updateScoreColor(totalScore);
+      }
+    }
+
+    function nullifyScore() {
+      totalScore = 0;
+      scoreElement.textContent = totalScore;
+      updateWarningText(totalScore);
+      updateScoreColor(totalScore);
+      saveScore(totalScore);
+    }
+
+    function initialize() {
+      tasks.forEach((task) => {
+        createTaskButton(task.name, task.score);
+      });
+      retrieveScore();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
